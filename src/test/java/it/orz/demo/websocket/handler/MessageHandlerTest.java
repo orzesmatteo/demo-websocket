@@ -1,7 +1,7 @@
 package it.orz.demo.websocket.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.orz.demo.websocket.model.Message;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

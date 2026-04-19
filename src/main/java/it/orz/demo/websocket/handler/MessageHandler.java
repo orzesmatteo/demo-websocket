@@ -1,7 +1,7 @@
 package it.orz.demo.websocket.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.orz.demo.websocket.model.Message;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,7 @@ public class MessageHandler extends TextWebSocketHandler {
             } else {
                 logger.warn("Session is closed, unable to send response");
             }
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
             logger.error("Error occurred while processing WebSocket message", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

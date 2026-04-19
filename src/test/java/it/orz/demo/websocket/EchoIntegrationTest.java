@@ -1,7 +1,7 @@
 package it.orz.demo.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.orz.demo.websocket.model.Message;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for WebSocket functionality using GWT pattern.
+ * Integration tests for the /echo endpoint.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class WebSocketIntegrationTest {
+class EchoIntegrationTest {
 
     @LocalServerPort
     private int port;
@@ -31,7 +31,7 @@ class WebSocketIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        webSocketUrl = "ws://localhost:" + port + "/message";
+        webSocketUrl = "ws://localhost:" + port + "/echo";
         objectMapper = new ObjectMapper();
     }
 

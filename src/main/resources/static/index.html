@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WebSocket demo</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+  .hint { color: #666; margin-top: 0; }
+  fieldset { border: 1px solid #ddd; padding: 0.75rem 1rem; margin: 1rem 0; }
+  label { display: inline-block; margin-right: 1rem; }
+  #log { background: #111; color: #eee; padding: 0.75rem; height: 260px; overflow-y: auto;
+         font-family: ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; }
+  #log .sent { color: #7cd; }
+  #log .recv { color: #9f9; }
+  #log .sys  { color: #fc6; }
+  input[type=text] { width: 60%; padding: 0.4rem; }
+  button { padding: 0.4rem 0.8rem; }
+</style>
+</head>
+<body>
+<h1>WebSocket demo</h1>
+<p class="hint">Pick an endpoint, connect, then send something.</p>
+
+<fieldset>
+  <legend>Endpoint</legend>
+  <label><input type="radio" name="ep" value="/echo" checked> /echo — delayed echo (JSON)</label>
+  <label><input type="radio" name="ep" value="/broadcast"> /broadcast — relay to all clients</label>
+  <label><input type="radio" name="ep" value="/counter"> /counter — per-session counter</label>
+  <div style="margin-top:0.5rem">
+    <button id="connect">Connect</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <span id="status">disconnected</span>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>Send</legend>
+  <input id="body" type="text" placeholder="hello" value="hello">
+  <button id="send" disabled>Send</button>
+  <p class="hint" style="font-size:12px">For /echo, text is wrapped as <code>{"body":"...","timestamp":"..."}</code>. Others send plain text.</p>
+</fieldset>
+
+<fieldset>
+  <legend>Log</legend>
+  <div id="log"></div>
+</fieldset>
+
+<script>
+  const $log = document.getElementById('log');
+  const $status = document.getElementById('status');
+  const $connect = document.getElementById('connect');
+  const $disconnect = document.getElementById('disconnect');
+  const $send = document.getElementById('send');
+  const $body = document.getElementById('body');
+  let ws = null;
+
+  function log(kind, text) {
+    const line = document.createElement('div');
+    line.className = kind;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+    $log.appendChild(line);
+    $log.scrollTop = $log.scrollHeight;
+  }
+
+  function selectedEndpoint() {
+    return document.querySelector('input[name=ep]:checked').value;
+  }
+
+  $connect.onclick = () => {
+    const ep = selectedEndpoint();
+    const url = `ws://${location.host}${ep}`;
+    ws = new WebSocket(url);
+    $status.textContent = 'connecting...';
+
+    ws.onopen = () => {
+      $status.textContent = `connected to ${ep}`;
+      $connect.disabled = true; $disconnect.disabled = false; $send.disabled = false;
+      log('sys', `open ${ep}`);
+    };
+    ws.onmessage = (e) => log('recv', `< ${e.data}`);
+    ws.onclose = () => {
+      $status.textContent = 'disconnected';
+      $connect.disabled = false; $disconnect.disabled = true; $send.disabled = true;
+      log('sys', 'close');
+    };
+    ws.onerror = () => log('sys', 'error');
+  };
+
+  $disconnect.onclick = () => ws && ws.close();
+
+  $send.onclick = () => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    const body = $body.value;
+    const payload = selectedEndpoint() === '/echo'
+      ? JSON.stringify({ body, timestamp: new Date().toISOString() })
+      : body;
+    ws.send(payload);
+    log('sent', `> ${payload}`);
+  };
+
+  $body.addEventListener('keydown', (e) => { if (e.key === 'Enter') $send.click(); });
+</script>
+</body>
+</html>
